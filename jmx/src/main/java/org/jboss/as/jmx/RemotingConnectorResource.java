@@ -37,7 +37,7 @@ public class RemotingConnectorResource extends SimpleResourceDefinition {
 
     static final String REMOTING_CAPABILITY = "org.wildfly.remoting.endpoint";
     static final RuntimeCapability<Void> REMOTE_JMX_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.management.jmx.remote")
-            .addRequirements(JMXSubsystemRootResource.JMX_CAPABILITY_NAME)
+            .addRequirements(JMXSubsystemRootResource.JMX_CAPABILITY.getName())
             .build();
 
     static final RemotingConnectorResource INSTANCE = new RemotingConnectorResource();

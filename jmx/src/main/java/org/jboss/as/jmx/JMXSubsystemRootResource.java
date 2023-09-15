@@ -11,8 +11,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 
 import java.util.function.Supplier;
 
-import javax.management.MBeanServer;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -30,6 +28,7 @@ import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.RuntimeHostControllerInfoAccessor;
+import org.jboss.as.controller.management.ManagementServiceDescriptor;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -58,9 +57,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
             .setXmlName(CommonAttributes.NON_CORE_MBEANS)
             .setDefaultValue(ModelNode.FALSE).build();
 
-    static final String JMX_CAPABILITY_NAME = "org.wildfly.management.jmx";
-    static final RuntimeCapability<Void> JMX_CAPABILITY =
-            RuntimeCapability.Builder.of(JMX_CAPABILITY_NAME, MBeanServer.class).build();
+    static final RuntimeCapability<Void> JMX_CAPABILITY = RuntimeCapability.Builder.of(ManagementServiceDescriptor.MBEAN_SERVER).build();
 
     private final ManagedAuditLogger auditLogger;
     private final JmxAuthorizer authorizer;

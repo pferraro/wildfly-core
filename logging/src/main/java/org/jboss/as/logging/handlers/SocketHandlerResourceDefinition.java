@@ -37,6 +37,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.logging.ElementAttributeMarshaller;
 import org.jboss.as.logging.KnownModelVersion;
@@ -107,7 +108,7 @@ public class SocketHandlerResourceDefinition extends SimpleResourceDefinition {
             .addFlag(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
             .setAllowExpression(true)
-            .setCapabilityReference(Capabilities.SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName())
             .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
@@ -199,8 +200,7 @@ public class SocketHandlerResourceDefinition extends SimpleResourceDefinition {
                     );
                     final Supplier<SSLContext> sslContext;
                     if (sslContextRef.isDefined()) {
-                        sslContext = serviceBuilder.requires(
-                                context.getCapabilityServiceName(Capabilities.SSL_CONTEXT_CAPABILITY, sslContextRef.asString(), SSLContext.class));
+                        sslContext = serviceBuilder.requires(context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, sslContextRef.asString()));
                     } else {
                         if (protocol == SocketHandler.Protocol.SSL_TCP) {
                             // Attempt to use the default SSL context if a context reference was not set, but we're

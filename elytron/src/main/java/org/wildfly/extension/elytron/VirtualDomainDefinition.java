@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.elytron;
 
-import static org.wildfly.extension.elytron.Capabilities.SECURITY_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.VIRTUAL_SECURITY_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.VIRTUAL_SECURITY_DOMAIN_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.DomainDefinition.OUTFLOW_ANONYMOUS;
@@ -36,6 +35,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.server.security.VirtualDomainMetaData;
 import org.jboss.as.server.security.VirtualDomainMetaDataService;
 import org.jboss.dmr.ModelNode;
@@ -62,7 +62,7 @@ class VirtualDomainDefinition extends SimpleResourceDefinition {
             .setRequired(false)
             .setMinSize(1)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, VIRTUAL_SECURITY_DOMAIN_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SECURITY_DOMAIN.getName(), VIRTUAL_SECURITY_DOMAIN_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition AUTH_METHOD = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.AUTH_METHOD, ModelType.STRING, true)
@@ -137,7 +137,7 @@ class VirtualDomainDefinition extends SimpleResourceDefinition {
         virtualDomainBuilder.addDependency(initialName, VirtualDomainMetaData.class, virtualDomain);
         for (String outflowDomainName : outflowSecurityDomainNames) {
             InjectedValue<SecurityDomain> outflowDomainInjector = new InjectedValue<>();
-            virtualDomainBuilder.addDependency(context.getCapabilityServiceName(SECURITY_DOMAIN_CAPABILITY, outflowDomainName, SecurityDomain.class).append(INITIAL), SecurityDomain.class, outflowDomainInjector);
+            virtualDomainBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.SECURITY_DOMAIN, outflowDomainName).append(INITIAL), SecurityDomain.class, outflowDomainInjector);
             outflowSecurityDomainInjectors.add(outflowDomainInjector);
         }
 

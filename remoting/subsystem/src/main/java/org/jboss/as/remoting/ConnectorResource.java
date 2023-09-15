@@ -4,8 +4,6 @@
  */
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
-import static org.jboss.as.remoting.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.ConnectorCommon.SASL_PROTOCOL;
 import static org.jboss.as.remoting.ConnectorCommon.SERVER_NAME;
@@ -23,6 +21,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelType;
@@ -66,7 +65,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition SASL_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(ConnectorCommon.SASL_AUTHENTICATION_FACTORY)
-            .setCapabilityReference(SASL_AUTHENTICATION_FACTORY_CAPABILITY, CONNECTOR_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SASL_AUTHENTICATION_FACTORY.getName(), CONNECTOR_CAPABILITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_FACTORY_REF)
             .setRestartAllServices()
             .build();
@@ -74,7 +73,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(CommonAttributes.SSL_CONTEXT, ModelType.STRING, true)
             .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
             .setNullSignificant(true)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, CONNECTOR_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName(), CONNECTOR_CAPABILITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
             .setRestartAllServices()
             .build();

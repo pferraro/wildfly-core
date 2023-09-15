@@ -6,8 +6,6 @@
 package org.jboss.as.server.operations;
 
 
-import static org.jboss.as.controller.management.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
-import static org.jboss.as.controller.management.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.jboss.as.remoting.RemotingServices.REMOTING_BASE;
 import static org.jboss.as.remoting.management.ManagementRemotingServices.MANAGEMENT_CONNECTOR;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.ATTRIBUTE_DEFINITIONS;
@@ -16,8 +14,6 @@ import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.SOCKET
 import java.util.Arrays;
 import java.util.List;
 
-import javax.net.ssl.SSLContext;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
@@ -25,6 +21,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.management.BaseNativeInterfaceAddStepHandler;
 import org.jboss.as.controller.management.NativeInterfaceCommonPolicy;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
@@ -33,7 +30,6 @@ import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.security.auth.server.SaslAuthenticationFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -76,10 +72,9 @@ public class NativeManagementAddHandler extends BaseNativeInterfaceAddStepHandle
             ServerLogger.ROOT_LOGGER.nativeManagementInterfaceIsUnsecured();
         }
 
-        ServiceName saslAuthenticationFactoryName = saslAuthenticationFactory != null ? context.getCapabilityServiceName(
-                SASL_AUTHENTICATION_FACTORY_CAPABILITY, saslAuthenticationFactory, SaslAuthenticationFactory.class) : null;
+        ServiceName saslAuthenticationFactoryName = saslAuthenticationFactory != null ? context.getCapabilityServiceName(SecurityServiceDescriptor.SASL_AUTHENTICATION_FACTORY, saslAuthenticationFactory) : null;
         String sslContext = commonPolicy.getSSLContext();
-        ServiceName sslContextName = sslContext != null ? context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, sslContext, SSLContext.class) : null;
+        ServiceName sslContextName = sslContext != null ? context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, sslContext) : null;
 
         final ServiceName sbmName = context.getCapabilityServiceName(SocketBindingManager.SERVICE_DESCRIPTOR);
 

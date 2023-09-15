@@ -8,10 +8,6 @@ package org.jboss.as.controller.management;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.management.Capabilities.HTTP_AUTHENTICATION_FACTORY_CAPABILITY;
-import static org.jboss.as.controller.management.Capabilities.HTTP_MANAGEMENT_CAPABILITY;
-import static org.jboss.as.controller.management.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
-import static org.jboss.as.controller.management.Capabilities.SSL_CONTEXT_CAPABILITY;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,6 +40,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -54,21 +51,21 @@ import org.jboss.dmr.ModelType;
  */
 public abstract class BaseHttpInterfaceResourceDefinition extends SimpleResourceDefinition {
 
-    public static final RuntimeCapability<Void> HTTP_MANAGEMENT_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(HTTP_MANAGEMENT_CAPABILITY)
+    public static final RuntimeCapability<Void> HTTP_MANAGEMENT_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.management.http-interface")
         .build();
 
     protected static final PathElement RESOURCE_PATH = PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE);
 
     public static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HTTP_AUTHENTICATION_FACTORY, ModelType.STRING, true)
         .setMinSize(1)
-        .setCapabilityReference(HTTP_AUTHENTICATION_FACTORY_CAPABILITY, HTTP_MANAGEMENT_RUNTIME_CAPABILITY)
+        .setCapabilityReference(SecurityServiceDescriptor.HTTP_AUTHENTICATION_FACTORY.getName(), HTTP_MANAGEMENT_RUNTIME_CAPABILITY)
         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_FACTORY_REF)
         .setRestartAllServices()
         .build();
 
     public static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SSL_CONTEXT, ModelType.STRING, true)
         .setMinSize(1)
-        .setCapabilityReference(SSL_CONTEXT_CAPABILITY, HTTP_MANAGEMENT_RUNTIME_CAPABILITY)
+        .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName(), HTTP_MANAGEMENT_RUNTIME_CAPABILITY)
         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
         .setRestartAllServices()
         .build();
@@ -93,7 +90,7 @@ public abstract class BaseHttpInterfaceResourceDefinition extends SimpleResource
 
     public static final SimpleAttributeDefinition SASL_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SASL_AUTHENTICATION_FACTORY, ModelType.STRING, true)
         .setMinSize(1)
-        .setCapabilityReference(SASL_AUTHENTICATION_FACTORY_CAPABILITY, HTTP_MANAGEMENT_RUNTIME_CAPABILITY)
+        .setCapabilityReference(SecurityServiceDescriptor.SASL_AUTHENTICATION_FACTORY.getName(), HTTP_MANAGEMENT_RUNTIME_CAPABILITY)
         .setRestartAllServices()
         .build();
 

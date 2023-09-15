@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.elytron;
 
-import static org.wildfly.extension.elytron.Capabilities.JACC_POLICY_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.JACC_POLICY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.POLICY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.CUSTOM_POLICY;
@@ -250,7 +249,7 @@ class PolicyDefinitions {
                     @Override
                     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
                         super.recordCapabilitiesAndRequirements(context, operation, resource);
-                        context.deregisterCapability(JACC_POLICY_CAPABILITY); // even if it wasn't registered, deregistering is ok
+                        context.deregisterCapability(JACC_POLICY_RUNTIME_CAPABILITY.getName()); // even if it wasn't registered, deregistering is ok
                     }
 
                     @Override
@@ -276,7 +275,7 @@ class PolicyDefinitions {
                         super.recordCapabilitiesAndRequirements(context, attributeDefinition, newValue, oldValue);
                         if (JACC_POLICY.equals(attributeDefinition.getName())) {
                             if (!newValue.isDefined()) {
-                                context.deregisterCapability(JACC_POLICY_CAPABILITY);  // even if it wasn't registered, deregistering is ok
+                                context.deregisterCapability(JACC_POLICY_RUNTIME_CAPABILITY.getName());  // even if it wasn't registered, deregistering is ok
                             } else if (!oldValue.isDefined()) {
                                 // Defined now but wasn't before; register
                                 context.registerCapability(JACC_POLICY_RUNTIME_CAPABILITY);

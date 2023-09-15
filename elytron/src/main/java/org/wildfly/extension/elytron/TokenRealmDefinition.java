@@ -5,12 +5,9 @@
 
 package org.wildfly.extension.elytron;
 
-import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
-import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.MODIFIABLE_SECURITY_REALM_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_REALM_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.JWT;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.OAUTH2_INTROSPECTION;
 import static org.wildfly.extension.elytron.TokenRealmDefinition.JwtValidatorAttributes.AUDIENCE;
@@ -57,13 +54,13 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
@@ -96,7 +93,7 @@ class TokenRealmDefinition extends SimpleResourceDefinition {
             .build();
 
     protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.CLIENT_SSL_CONTEXT, ModelType.STRING, true)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, SECURITY_REALM_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName(), SECURITY_REALM_CAPABILITY)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .build();
@@ -133,7 +130,7 @@ class TokenRealmDefinition extends SimpleResourceDefinition {
                 .setAlternatives(ElytronDescriptionConstants.PUBLIC_KEY)
                 .setRequires(ElytronDescriptionConstants.CERTIFICATE)
                 .setMinSize(1)
-                .setCapabilityReference(KEY_STORE_CAPABILITY, SECURITY_REALM_CAPABILITY)
+                .setCapabilityReference(SecurityServiceDescriptor.KEY_STORE.getName(), SECURITY_REALM_CAPABILITY)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setAllowExpression(false)
                 .build();
@@ -348,14 +345,11 @@ class TokenRealmDefinition extends SimpleResourceDefinition {
                 String keyStore = KEY_STORE.resolveModelAttribute(context, jwtValidatorNode).asStringOrNull();
 
                 if (keyStore != null) {
-                    serviceBuilder.addDependency(context.getCapabilityServiceName(
-                            buildDynamicCapabilityName(KEY_STORE_CAPABILITY, keyStore), KeyStore.class),
-                            KeyStore.class, keyStoreInjector);
+                    serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.KEY_STORE, keyStore), KeyStore.class, keyStoreInjector);
                 }
 
                 if (sslContextRef != null) {
-                    String runtimeCapability = RuntimeCapability.buildDynamicCapabilityName(SSL_CONTEXT_CAPABILITY, sslContextRef);
-                    serviceBuilder.addDependency(context.getCapabilityServiceName(runtimeCapability, SSLContext.class), SSLContext.class, sslContextInjector);
+                    serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, sslContextRef), SSLContext.class, sslContextInjector);
                 }
 
                 serviceBuilder.addAliases(aliasServiceName).install();
@@ -396,8 +390,7 @@ class TokenRealmDefinition extends SimpleResourceDefinition {
                 ServiceBuilder<SecurityRealm> serviceBuilder = serviceTarget.addService(mainServiceName, service).addAliases(aliasServiceName);
 
                 if (sslContextRef != null) {
-                    String runtimeCapability = RuntimeCapability.buildDynamicCapabilityName(SSL_CONTEXT_CAPABILITY, sslContextRef);
-                    serviceBuilder.addDependency(context.getCapabilityServiceName(runtimeCapability, SSLContext.class), SSLContext.class, sslContextInjector);
+                    serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, sslContextRef), SSLContext.class, sslContextInjector);
                 }
 
                 serviceBuilder.install();

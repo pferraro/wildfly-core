@@ -5,18 +5,17 @@
 
 package org.wildfly.extension.elytron;
 
-import java.security.KeyStore;
 import java.security.Permissions;
 import java.security.Policy;
 import java.security.Provider;
 import java.util.function.Consumer;
 
 import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.security.sasl.SaslServerFactory;
 
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.server.security.VirtualDomainMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.wildfly.extension.elytron.capabilities.CredentialSecurityFactory;
@@ -24,19 +23,14 @@ import org.wildfly.extension.elytron.capabilities.PrincipalTransformer;
 import org.wildfly.extension.elytron.capabilities._private.DirContextSupplier;
 import org.wildfly.extension.elytron.capabilities._private.SecurityEventListener;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
-import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.server.EvidenceDecoder;
-import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.ModifiableSecurityRealm;
 import org.wildfly.security.auth.server.PrincipalDecoder;
 import org.wildfly.security.auth.server.RealmMapper;
-import org.wildfly.security.auth.server.SaslAuthenticationFactory;
-import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityRealm;
 import org.wildfly.security.authz.PermissionMapper;
 import org.wildfly.security.authz.RoleDecoder;
 import org.wildfly.security.authz.RoleMapper;
-import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 import org.wildfly.security.x500.cert.acme.AcmeAccount;
 import org.wildfly.security.x500.cert.acme.CertificateAuthority;
@@ -61,11 +55,7 @@ class Capabilities {
             .Builder.of(AUTHENTICATION_CONFIGURATION_CAPABILITY, true, AuthenticationConfiguration.class)
             .build();
 
-    static final String AUTHENTICATION_CONTEXT_CAPABILITY = CAPABILITY_BASE + "authentication-context";
-
-    static final RuntimeCapability<Void> AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY = RuntimeCapability
-            .Builder.of(AUTHENTICATION_CONTEXT_CAPABILITY, true, AuthenticationContext.class)
-            .build();
+    static final RuntimeCapability<Void> AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT).build();
 
     static final String CERTIFICATE_AUTHORITY_ACCOUNT_CAPABILITY = CAPABILITY_BASE + "certificate-authority-account";
 
@@ -79,17 +69,13 @@ class Capabilities {
             .Builder.of(CERTIFICATE_AUTHORITY_CAPABILITY, true, CertificateAuthority.class)
             .build();
 
-    static final String CREDENTIAL_STORE_CAPABILITY = CAPABILITY_BASE + "credential-store";
-
     /*
      * A variant of the credential-store capability which also provides access to the underlying
      * {@code CredentialStore} as a runtime API from a {@code ExceptionFunction<OperationContext, CredentialStore, OperationFailedException>}.
      */
     static final String CREDENTIAL_STORE_API_CAPABILITY = CAPABILITY_BASE + "credential-store-api";
 
-    static final RuntimeCapability<Void> CREDENTIAL_STORE_RUNTIME_CAPABILITY =  RuntimeCapability
-            .Builder.of(CREDENTIAL_STORE_CAPABILITY, true, CredentialStore.class)
-            .build();
+    static final RuntimeCapability<Void> CREDENTIAL_STORE_RUNTIME_CAPABILITY =  RuntimeCapability.Builder.of(SecurityServiceDescriptor.CREDENTIAL_STORE).build();
 
     static final String ELYTRON_CAPABILITY = CAPABILITY_BASE + "elytron";
 
@@ -107,11 +93,7 @@ class Capabilities {
             .Builder.of(ELYTRON_CAPABILITY, COMMON_DEPENDENCIES)
             .build();
 
-    static final String HTTP_AUTHENTICATION_FACTORY_CAPABILITY = CAPABILITY_BASE + "http-authentication-factory";
-
-    static final RuntimeCapability<Void> HTTP_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY = RuntimeCapability
-            .Builder.of(HTTP_AUTHENTICATION_FACTORY_CAPABILITY, true, HttpAuthenticationFactory.class)
-            .build();
+    static final RuntimeCapability<Void> HTTP_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(SecurityServiceDescriptor.HTTP_AUTHENTICATION_FACTORY).build();
 
     static final String HTTP_SERVER_MECHANISM_FACTORY_CAPABILITY = CAPABILITY_BASE + "http-server-mechanism-factory";
 
@@ -125,11 +107,7 @@ class Capabilities {
             .Builder.of(KEY_MANAGER_CAPABILITY, true, KeyManager.class)
             .build();
 
-    static final String KEY_STORE_CAPABILITY = CAPABILITY_BASE + "key-store";
-
-    static final RuntimeCapability<Void> KEY_STORE_RUNTIME_CAPABILITY =  RuntimeCapability
-        .Builder.of(KEY_STORE_CAPABILITY, true, KeyStore.class)
-        .build();
+    static final RuntimeCapability<Void> KEY_STORE_RUNTIME_CAPABILITY =  RuntimeCapability.Builder.of(SecurityServiceDescriptor.KEY_STORE).build();
 
     static final String PERMISSION_MAPPER_CAPABILITY = CAPABILITY_BASE + "permission-mapper";
 
@@ -197,11 +175,7 @@ class Capabilities {
             .Builder.of(SECURITY_EVENT_LISTENER_CAPABILITY, true, SecurityEventListener.class)
             .build();
 
-    static final String SASL_AUTHENTICATION_FACTORY_CAPABILITY = CAPABILITY_BASE + "sasl-authentication-factory";
-
-    static final RuntimeCapability<Void> SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY = RuntimeCapability
-            .Builder.of(SASL_AUTHENTICATION_FACTORY_CAPABILITY, true, SaslAuthenticationFactory.class)
-            .build();
+    static final RuntimeCapability<Void> SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(SecurityServiceDescriptor.SASL_AUTHENTICATION_FACTORY).build();
 
     static final String SASL_SERVER_FACTORY_CAPABILITY = CAPABILITY_BASE + "sasl-server-factory";
 
@@ -209,11 +183,7 @@ class Capabilities {
             .Builder.of(SASL_SERVER_FACTORY_CAPABILITY, true, SaslServerFactory.class)
             .build();
 
-    static final String SECURITY_DOMAIN_CAPABILITY = CAPABILITY_BASE + "security-domain";
-
-    static final RuntimeCapability<Void> SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability
-        .Builder.of(SECURITY_DOMAIN_CAPABILITY, true, SecurityDomain.class)
-        .build();
+    static final RuntimeCapability<Void> SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(SecurityServiceDescriptor.SECURITY_DOMAIN).build();
 
     static final String VIRTUAL_SECURITY_DOMAIN_CAPABILITY = CAPABILITY_BASE + "virtual-security-domain";
 
@@ -241,11 +211,7 @@ class Capabilities {
         .Builder.of(SECURITY_REALM_CAPABILITY, true, SecurityRealm.class)
         .build();
 
-    static final String SSL_CONTEXT_CAPABILITY = CAPABILITY_BASE + "ssl-context";
-
-    static final RuntimeCapability<Void> SSL_CONTEXT_RUNTIME_CAPABILITY = RuntimeCapability
-        .Builder.of(SSL_CONTEXT_CAPABILITY, true, SSLContext.class)
-        .build();
+    static final RuntimeCapability<Void> SSL_CONTEXT_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(SecurityServiceDescriptor.SSL_CONTEXT).build();
 
     static final String TRUST_MANAGER_CAPABILITY = CAPABILITY_BASE + "trust-manager";
 
@@ -264,10 +230,7 @@ class Capabilities {
             .Builder.of(POLICY_CAPABILITY, false, Policy.class)
             .build();
 
-    static final String JACC_POLICY_CAPABILITY = CAPABILITY_BASE + "jacc-policy";
-    static final RuntimeCapability<Void> JACC_POLICY_RUNTIME_CAPABILITY =  RuntimeCapability
-            .Builder.of(JACC_POLICY_CAPABILITY, false, Policy.class)
-            .build();
+    static final RuntimeCapability<Void> JACC_POLICY_RUNTIME_CAPABILITY =  RuntimeCapability.Builder.of(SecurityServiceDescriptor.JACC_POLICY).build();
 
     static final String EXPRESSION_RESOLVER_CAPABILITY = CAPABILITY_BASE + "expression-resolver";
 

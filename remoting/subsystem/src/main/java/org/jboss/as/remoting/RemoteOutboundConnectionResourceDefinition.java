@@ -5,8 +5,6 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -21,6 +19,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -66,7 +65,7 @@ class RemoteOutboundConnectionResourceDefinition extends AbstractOutboundConnect
             .build();
 
     static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(CommonAttributes.AUTHENTICATION_CONTEXT, ModelType.STRING, true)
-            .setCapabilityReference(AUTHENTICATION_CONTEXT_CAPABILITY, OUTBOUND_CONNECTION_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT.getName(), OUTBOUND_CONNECTION_CAPABILITY)
             .setAlternatives(CommonAttributes.USERNAME, CommonAttributes.SECURITY_REALM, CommonAttributes.PROTOCOL)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .build();

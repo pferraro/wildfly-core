@@ -6,15 +6,12 @@ package org.wildfly.extension.elytron;
 
 import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 import static org.wildfly.extension.elytron.AvailableMechanismsRuntimeResource.wrap;
-import static org.wildfly.extension.elytron.Capabilities.HTTP_AUTHENTICATION_FACTORY_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.HTTP_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.HTTP_SERVER_MECHANISM_FACTORY_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.PRINCIPAL_TRANSFORMER_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.REALM_MAPPER_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SASL_SERVER_FACTORY_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SECURITY_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_FACTORY_CREDENTIAL_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDefinition.commonDependencies;
 import static org.wildfly.extension.elytron.ElytronExtension.getRequiredService;
@@ -47,6 +44,7 @@ import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -96,13 +94,13 @@ class AuthenticationFactoryDefinitions {
     static final SimpleAttributeDefinition HTTP_SERVER_MECHANISM_FACTORY = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.HTTP_SERVER_MECHANISM_FACTORY, ModelType.STRING, false)
             .setMinSize(1)
             .setRestartAllServices()
-            .setCapabilityReference(HTTP_SERVER_MECHANISM_FACTORY_CAPABILITY, HTTP_AUTHENTICATION_FACTORY_CAPABILITY)
+            .setCapabilityReference(HTTP_SERVER_MECHANISM_FACTORY_CAPABILITY, HTTP_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition SASL_SERVER_FACTORY = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SASL_SERVER_FACTORY, ModelType.STRING, false)
             .setMinSize(1)
             .setRestartAllServices()
-            .setCapabilityReference(SASL_SERVER_FACTORY_CAPABILITY, SASL_AUTHENTICATION_FACTORY_CAPABILITY)
+            .setCapabilityReference(SASL_SERVER_FACTORY_CAPABILITY, SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition MECHANISM_NAME = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.MECHANISM_NAME, ModelType.STRING, true)
@@ -157,18 +155,18 @@ class AuthenticationFactoryDefinitions {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
-    static AttributeDefinition getMechanismConfiguration(String forCapability) {
+    static AttributeDefinition getMechanismConfiguration(RuntimeCapability<?> capability) {
         SimpleAttributeDefinition preRealmPrincipalTransformerAttribute = new SimpleAttributeDefinitionBuilder(BASE_PRE_REALM_PRINCIPAL_TRANSFORMER)
-                .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, forCapability)
+                .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, capability)
                 .build();
         SimpleAttributeDefinition postRealmPrincipalTransformerAttribute = new SimpleAttributeDefinitionBuilder(BASE_POST_REALM_PRINCIPAL_TRANSFORMER)
-                .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, forCapability)
+                .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, capability)
                 .build();
         SimpleAttributeDefinition finalprincipalTransformerAttribute = new SimpleAttributeDefinitionBuilder(BASE_FINAL_PRINCIPAL_TRANSFORMER)
-                .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, forCapability)
+                .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, capability)
                 .build();
         SimpleAttributeDefinition realmMapperAttribute = new SimpleAttributeDefinitionBuilder(BASE_REALM_MAPPER)
-                .setCapabilityReference(REALM_MAPPER_CAPABILITY, forCapability)
+                .setCapabilityReference(REALM_MAPPER_CAPABILITY, capability)
                 .build();
 
         ObjectTypeAttributeDefinition mechanismRealmConfiguration = new ObjectTypeAttributeDefinition.Builder(ElytronDescriptionConstants.MECHANISM_REALM_CONFIGURATION, REALM_NAME, preRealmPrincipalTransformerAttribute, postRealmPrincipalTransformerAttribute, finalprincipalTransformerAttribute, realmMapperAttribute)
@@ -186,7 +184,7 @@ class AuthenticationFactoryDefinitions {
                 .build();
 
         SimpleAttributeDefinition credentialSecurityFactoryAttribute = new SimpleAttributeDefinitionBuilder(BASE_CREDENTIAL_SECURITY_FACTORY)
-                .setCapabilityReference(SECURITY_FACTORY_CREDENTIAL_CAPABILITY, forCapability)
+                .setCapabilityReference(SECURITY_FACTORY_CREDENTIAL_CAPABILITY, capability)
                 .build();
 
         ObjectTypeAttributeDefinition mechanismConfiguration = new ObjectTypeAttributeDefinition.Builder(ElytronDescriptionConstants.MECHANISM_CONFIGURATION, MECHANISM_NAME, HOST_NAME, PROTOCOL,
@@ -355,11 +353,11 @@ class AuthenticationFactoryDefinitions {
     static ResourceDefinition getHttpAuthenticationFactory() {
 
         SimpleAttributeDefinition securityDomainAttribute = new SimpleAttributeDefinitionBuilder(BASE_SECURITY_DOMAIN_REF)
-                .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, HTTP_AUTHENTICATION_FACTORY_CAPABILITY)
+                .setCapabilityReference(SecurityServiceDescriptor.SECURITY_DOMAIN.getName(), HTTP_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY)
                 .setRestartAllServices()
                 .build();
 
-        AttributeDefinition mechanismConfigurationAttribute = getMechanismConfiguration(HTTP_AUTHENTICATION_FACTORY_CAPABILITY);
+        AttributeDefinition mechanismConfigurationAttribute = getMechanismConfiguration(HTTP_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY);
 
         AttributeDefinition[] attributes = new AttributeDefinition[] { securityDomainAttribute, HTTP_SERVER_MECHANISM_FACTORY, mechanismConfigurationAttribute };
         AbstractAddStepHandler add = new BaseAddHandler(HTTP_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY, attributes) {
@@ -384,9 +382,7 @@ class AuthenticationFactoryDefinitions {
                 final InjectedValue<HttpServerAuthenticationMechanismFactory> mechanismFactoryInjector = new InjectedValue<HttpServerAuthenticationMechanismFactory>();
 
                 String securityDomain = securityDomainAttribute.resolveModelAttribute(context, model).asString();
-                serviceBuilder.addDependency(context.getCapabilityServiceName(
-                        buildDynamicCapabilityName(SECURITY_DOMAIN_CAPABILITY, securityDomain), SecurityDomain.class),
-                        SecurityDomain.class, securityDomainInjector);
+                serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.SECURITY_DOMAIN, securityDomain), SecurityDomain.class, securityDomainInjector);
 
                 String httpServerFactory = HTTP_SERVER_MECHANISM_FACTORY.resolveModelAttribute(context, model).asString();
                 serviceBuilder.addDependency(context.getCapabilityServiceName(
@@ -450,11 +446,11 @@ class AuthenticationFactoryDefinitions {
 
     static ResourceDefinition getSaslAuthenticationFactory() {
         SimpleAttributeDefinition securityDomainAttribute = new SimpleAttributeDefinitionBuilder(BASE_SECURITY_DOMAIN_REF)
-                .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, SASL_AUTHENTICATION_FACTORY_CAPABILITY)
+                .setCapabilityReference(SecurityServiceDescriptor.SECURITY_DOMAIN.getName(), SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY)
                 .setRestartAllServices()
                 .build();
 
-        AttributeDefinition mechanismConfigurationAttribute = getMechanismConfiguration(SASL_AUTHENTICATION_FACTORY_CAPABILITY);
+        AttributeDefinition mechanismConfigurationAttribute = getMechanismConfiguration(SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY);
 
         AttributeDefinition[] attributes = new AttributeDefinition[] { securityDomainAttribute, SASL_SERVER_FACTORY, mechanismConfigurationAttribute };
 
@@ -471,9 +467,7 @@ class AuthenticationFactoryDefinitions {
                 final InjectedValue<SecurityDomain> securityDomainInjector = new InjectedValue<SecurityDomain>();
                 final InjectedValue<SaslServerFactory> saslServerFactoryInjector = new InjectedValue<SaslServerFactory>();
 
-                serviceBuilder.addDependency(context.getCapabilityServiceName(
-                        buildDynamicCapabilityName(SECURITY_DOMAIN_CAPABILITY, securityDomain), SecurityDomain.class),
-                        SecurityDomain.class, securityDomainInjector);
+                serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.SECURITY_DOMAIN, securityDomain), SecurityDomain.class, securityDomainInjector);
 
                 serviceBuilder.addDependency(context.getCapabilityServiceName(
                         buildDynamicCapabilityName(SASL_SERVER_FACTORY_CAPABILITY, saslServerFactory), SaslServerFactory.class),

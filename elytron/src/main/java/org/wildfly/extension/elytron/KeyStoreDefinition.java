@@ -8,7 +8,6 @@ package org.wildfly.extension.elytron;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
-import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.PROVIDERS_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDefinition.commonDependencies;
@@ -89,7 +88,7 @@ final class KeyStoreDefinition extends SimpleResourceDefinition {
         .setAttributeGroup(ElytronDescriptionConstants.IMPLEMENTATION)
         .setMinSize(1)
         .setRestartAllServices()
-        .setCapabilityReference(PROVIDERS_CAPABILITY, KEY_STORE_CAPABILITY)
+        .setCapabilityReference(KEY_STORE_RUNTIME_CAPABILITY, PROVIDERS_CAPABILITY)
         .build();
 
     static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE = CredentialReference.getAttributeDefinition(true);

@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.elytron;
 
-import static org.wildfly.extension.elytron.Capabilities.CREDENTIAL_STORE_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.EXPRESSION_RESOLVER_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronExtension.isServerOrHostController;
 
@@ -38,6 +37,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.elytron.expression.ElytronExpressionResolver;
@@ -72,7 +72,7 @@ class ExpressionResolverResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(false)
             .setMinSize(1)
             .setRestartAllServices()
-            .setCapabilityReference(CREDENTIAL_STORE_CAPABILITY, EXPRESSION_RESOLVER_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.CREDENTIAL_STORE.getName(), EXPRESSION_RESOLVER_CAPABILITY)
             .build();
 
     private static final SimpleAttributeDefinition SECRET_KEY = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SECRET_KEY, ModelType.STRING, false)

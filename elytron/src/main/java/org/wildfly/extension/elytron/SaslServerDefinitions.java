@@ -6,10 +6,9 @@ package org.wildfly.extension.elytron;
 
 import static org.wildfly.extension.elytron.AvailableMechanismsRuntimeResource.wrap;
 import static org.wildfly.extension.elytron.Capabilities.PROVIDERS_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
+import static org.wildfly.extension.elytron.Capabilities.SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SASL_SERVER_FACTORY_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SASL_SERVER_FACTORY_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SECURITY_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.elytron.ClassLoadingAttributeDefinitions.MODULE;
 import static org.wildfly.extension.elytron.ClassLoadingAttributeDefinitions.resolveClassLoader;
 import static org.wildfly.extension.elytron.CommonAttributes.PROPERTIES;
@@ -51,6 +50,7 @@ import org.jboss.as.controller.operations.validation.ObjectTypeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
@@ -95,7 +95,7 @@ class SaslServerDefinitions {
     static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SECURITY_DOMAIN, ModelType.STRING, false)
         .setMinSize(1)
         .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-        .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, SASL_AUTHENTICATION_FACTORY_CAPABILITY)
+        .setCapabilityReference(SecurityServiceDescriptor.SECURITY_DOMAIN.getName(), SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY)
         .build();
 
     static final SimpleAttributeDefinition SASL_SERVER_FACTORY = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SASL_SERVER_FACTORY, ModelType.STRING, false)

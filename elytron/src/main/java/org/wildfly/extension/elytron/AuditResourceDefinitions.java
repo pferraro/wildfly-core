@@ -4,9 +4,7 @@
  */
 package org.wildfly.extension.elytron;
 
-import static org.wildfly.extension.elytron.Capabilities.SECURITY_EVENT_LISTENER_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_EVENT_LISTENER_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.FILE_AUDIT_LOG;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.PERIODIC_ROTATING_FILE_AUDIT_LOG;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.SIZE_ROTATING_FILE_AUDIT_LOG;
@@ -37,9 +35,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
@@ -157,7 +155,7 @@ class AuditResourceDefinitions {
     static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SSL_CONTEXT, ModelType.STRING, true)
             .setAllowExpression(false)
             .setRestartAllServices()
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, SECURITY_EVENT_LISTENER_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName(), SECURITY_EVENT_LISTENER_RUNTIME_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition SYSLOG_FORMAT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SYSLOG_FORMAT, ModelType.STRING, true)
@@ -420,8 +418,7 @@ class AuditResourceDefinitions {
                 final InjectedValue<SSLContext> sslContextInjector = new InjectedValue<>();
                 String sslContextName = SSL_CONTEXT.resolveModelAttribute(context, model).asStringOrNull();
                 if (sslContextName != null) {
-                    String sslCapability = RuntimeCapability.buildDynamicCapabilityName(SSL_CONTEXT_CAPABILITY, sslContextName);
-                    ServiceName sslServiceName = context.getCapabilityServiceName(sslCapability, SSLContext.class);
+                    ServiceName sslServiceName = context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, sslContextName);
                     serviceBuilder.addDependency(sslServiceName, SSLContext.class, sslContextInjector);
                 }
 

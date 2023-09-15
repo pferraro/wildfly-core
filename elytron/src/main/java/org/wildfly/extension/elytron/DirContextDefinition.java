@@ -7,10 +7,7 @@ package org.wildfly.extension.elytron;
 
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
-import static org.wildfly.extension.elytron.Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.DIR_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.DIR_CONTEXT_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.elytron.CommonAttributes.PROPERTIES;
 import static org.wildfly.extension.elytron._private.ElytronSubsystemMessages.ROOT_LOGGER;
 
@@ -36,6 +33,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -103,14 +101,14 @@ class DirContextDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.AUTHENTICATION_CONTEXT, ModelType.STRING, true)
             .setAllowExpression(false)
             .setRestartAllServices()
-            .setCapabilityReference(AUTHENTICATION_CONTEXT_CAPABILITY, DIR_CONTEXT_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT.getName(), DIR_CONTEXT_RUNTIME_CAPABILITY)
             .setAlternatives(CredentialReference.CREDENTIAL_REFERENCE, ElytronDescriptionConstants.SSL_CONTEXT,ElytronDescriptionConstants.PRINCIPAL)
             .build();
 
     static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SSL_CONTEXT, ModelType.STRING, true)
             .setAllowExpression(false)
             .setRestartAllServices()
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, DIR_CONTEXT_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName(), DIR_CONTEXT_RUNTIME_CAPABILITY)
             .setAlternatives(ElytronDescriptionConstants.AUTHENTICATION_CONTEXT)
             .build();
 
@@ -236,8 +234,7 @@ class DirContextDefinition extends SimpleResourceDefinition {
 
             String sslContextName = SSL_CONTEXT.resolveModelAttribute(context, model).asStringOrNull();
             if (sslContextName != null) {
-                String sslCapability = RuntimeCapability.buildDynamicCapabilityName(SSL_CONTEXT_CAPABILITY, sslContextName);
-                ServiceName sslServiceName = context.getCapabilityServiceName(sslCapability, SSLContext.class);
+                ServiceName sslServiceName = context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, sslContextName);
                 serviceBuilder.addDependency(sslServiceName, SSLContext.class, sslContextInjector);
             }
 
@@ -247,8 +244,7 @@ class DirContextDefinition extends SimpleResourceDefinition {
 
             String authenticationContextName = AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asStringOrNull();
             if (authenticationContextName != null) {
-                String acCapability = RuntimeCapability.buildDynamicCapabilityName(AUTHENTICATION_CONTEXT_CAPABILITY, authenticationContextName);
-                ServiceName acServiceName = context.getCapabilityServiceName(acCapability, AuthenticationContext.class);
+                ServiceName acServiceName = context.getCapabilityServiceName(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT, authenticationContextName);
                 serviceBuilder.addDependency(acServiceName, AuthenticationContext.class, authenticationContextInjector);
             }
 

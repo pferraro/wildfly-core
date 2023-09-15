@@ -9,7 +9,6 @@ import static org.jboss.as.controller.security.CredentialReference.getCredential
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.wildfly.extension.elytron.Capabilities.CREDENTIAL_STORE_API_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.CREDENTIAL_STORE_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.CREDENTIAL_STORE_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.PROVIDERS_API_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.PROVIDERS_CAPABILITY;
@@ -136,7 +135,7 @@ final class CredentialStoreResourceDefinition extends AbstractCredentialStoreRes
             .setAllowExpression(false)
             .setMinSize(1)
             .setRestartAllServices()
-            .setCapabilityReference(PROVIDERS_CAPABILITY, CREDENTIAL_STORE_CAPABILITY)
+            .setCapabilityReference(PROVIDERS_CAPABILITY, CREDENTIAL_STORE_RUNTIME_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition OTHER_PROVIDERS = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.OTHER_PROVIDERS, ModelType.STRING, true)
@@ -144,7 +143,7 @@ final class CredentialStoreResourceDefinition extends AbstractCredentialStoreRes
             .setAllowExpression(false)
             .setMinSize(1)
             .setRestartAllServices()
-            .setCapabilityReference(PROVIDERS_CAPABILITY, CREDENTIAL_STORE_CAPABILITY)
+            .setCapabilityReference(PROVIDERS_CAPABILITY, CREDENTIAL_STORE_RUNTIME_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)

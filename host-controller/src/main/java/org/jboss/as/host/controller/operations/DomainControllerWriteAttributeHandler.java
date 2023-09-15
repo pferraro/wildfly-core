@@ -26,6 +26,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
@@ -37,7 +38,6 @@ import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
  *
@@ -47,7 +47,7 @@ public abstract class DomainControllerWriteAttributeHandler extends ReloadRequir
 
     public static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.AUTHENTICATION_CONTEXT,  ModelType.STRING,  true)
-                    .setCapabilityReference("org.wildfly.security.authentication-context", "org.wildfly.host.controller")
+                    .setCapabilityReference(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT.getName(), "org.wildfly.host.controller")
                     .setAlternatives(ModelDescriptionConstants.SECURITY_REALM, ModelDescriptionConstants.USERNAME)
                     .build();
     public static final SimpleAttributeDefinition PORT =
@@ -266,8 +266,7 @@ public abstract class DomainControllerWriteAttributeHandler extends ReloadRequir
 
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        hostControllerInfo.setAuthenticationContext(context.getCapabilityServiceName(
-                                "org.wildfly.security.authentication-context", authenticationContext, AuthenticationContext.class));
+                        hostControllerInfo.setAuthenticationContext(context.getCapabilityServiceName(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT, authenticationContext));
                     }
                 }, Stage.RUNTIME);
             } else {

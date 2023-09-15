@@ -6,8 +6,6 @@
 package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
-import static org.jboss.as.controller.management.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
-import static org.jboss.as.controller.management.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.resources.NativeManagementResourceDefinition.ATTRIBUTE_DEFINITIONS;
 import static org.jboss.as.remoting.RemotingServices.REMOTING_BASE;
@@ -16,14 +14,13 @@ import static org.jboss.as.remoting.management.ManagementRemotingServices.MANAGE
 import java.util.Arrays;
 import java.util.List;
 
-import javax.net.ssl.SSLContext;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.management.BaseNativeInterfaceAddStepHandler;
 import org.jboss.as.controller.management.NativeInterfaceCommonPolicy;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.host.controller.security.SaslWrappingService;
 import org.jboss.as.network.NetworkInterfaceBinding;
@@ -31,7 +28,6 @@ import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.security.auth.server.SaslAuthenticationFactory;
 import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
 
@@ -74,12 +70,11 @@ public class NativeManagementAddHandler extends BaseNativeInterfaceAddStepHandle
             ROOT_LOGGER.nativeManagementInterfaceIsUnsecured();
         }
 
-        ServiceName saslAuthenticationFactoryName = saslAuthenticationFactory != null ? context.getCapabilityServiceName(
-                SASL_AUTHENTICATION_FACTORY_CAPABILITY, saslAuthenticationFactory, SaslAuthenticationFactory.class) : null;
+        ServiceName saslAuthenticationFactoryName = saslAuthenticationFactory != null ? context.getCapabilityServiceName(SecurityServiceDescriptor.SASL_AUTHENTICATION_FACTORY, saslAuthenticationFactory) : null;
         saslAuthenticationFactoryName = SaslWrappingService.install(serviceTarget, saslAuthenticationFactoryName, NATIVE_INTERFACE);
 
         String sslContext = commonPolicy.getSSLContext();
-        ServiceName sslContextName = sslContext != null ? context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, sslContext, SSLContext.class) : null;
+        ServiceName sslContextName = sslContext != null ? context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, sslContext) : null;
 
         NativeManagementServices.installManagementWorkerService(serviceTarget, context.getServiceRegistry(false));
 

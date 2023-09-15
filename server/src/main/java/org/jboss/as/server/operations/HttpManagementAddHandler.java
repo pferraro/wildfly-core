@@ -29,6 +29,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.management.BaseHttpInterfaceAddStepHandler;
 import org.jboss.as.controller.management.HttpInterfaceCommonPolicy;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.domain.http.server.ConsoleAvailability;
 import org.jboss.as.domain.http.server.ConsoleMode;
 import org.jboss.as.domain.http.server.ManagementHttpRequestProcessor;
@@ -55,7 +56,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
-import org.wildfly.security.auth.server.SaslAuthenticationFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -137,7 +137,7 @@ public class HttpManagementAddHandler extends BaseHttpInterfaceAddStepHandler {
         final Supplier<ManagementHttpRequestProcessor> rpSupplier = builder.requires(requestProcessorName);
         final Supplier<XnioWorker> xwSupplier = builder.requires(ManagementWorkerService.SERVICE_NAME);
         final Supplier<Executor> eSupplier = builder.requires(ExternalManagementRequestExecutor.SERVICE_NAME);
-        final Supplier<HttpAuthenticationFactory> hafSupplier = httpAuthenticationFactory != null ? builder.requiresCapability(HTTP_AUTHENTICATION_FACTORY_CAPABILITY, HttpAuthenticationFactory.class, httpAuthenticationFactory) : null;
+        final Supplier<HttpAuthenticationFactory> hafSupplier = httpAuthenticationFactory != null ? builder.requires(SecurityServiceDescriptor.HTTP_AUTHENTICATION_FACTORY, httpAuthenticationFactory) : null;
         Supplier<ServerEnvironment> environment = builder.requires(ServerEnvironment.SERVICE_DESCRIPTOR);
         Supplier<String> consoleSlot = new Supplier<>() {
             @Override
@@ -154,7 +154,7 @@ public class HttpManagementAddHandler extends BaseHttpInterfaceAddStepHandler {
                 virtualMechanismFactorySupplier = builder.requires(((AdvancedSecurityMetaData) securityMetaData).getHttpServerAuthenticationMechanismFactory());
             }
         }
-        final Supplier<SSLContext> scSupplier = sslContext != null ? builder.requiresCapability(SSL_CONTEXT_CAPABILITY, SSLContext.class, sslContext) : null;
+        final Supplier<SSLContext> scSupplier = sslContext != null ? builder.requires(SecurityServiceDescriptor.SSL_CONTEXT, sslContext) : null;
         final UndertowHttpManagementService undertowService = new UndertowHttpManagementService(hmConsumer, lrSupplier, mcSupplier, sbSupplier, ssbSupplier, sbmSupplier,
                 null, null, rpSupplier, xwSupplier, eSupplier, hafSupplier, scSupplier, null, null, commonPolicy.getAllowedOrigins(), consoleMode,
                 consoleSlot, commonPolicy.getConstantHeaders(), caSupplier, virtualSecurityDomainSupplier, virtualMechanismFactorySupplier);
@@ -183,8 +183,7 @@ public class HttpManagementAddHandler extends BaseHttpInterfaceAddStepHandler {
             }
 
             String saslAuthFactoryName = commonPolicy.getSaslAuthenticationFactory();
-            ServiceName saslAuthenticationFactory = saslAuthFactoryName != null ? context.getCapabilityServiceName(
-                    SASL_AUTHENTICATION_FACTORY_CAPABILITY, saslAuthFactoryName, SaslAuthenticationFactory.class) : null;
+            ServiceName saslAuthenticationFactory = saslAuthFactoryName != null ? context.getCapabilityServiceName(SecurityServiceDescriptor.SASL_AUTHENTICATION_FACTORY, saslAuthFactoryName) : null;
 
             RemotingHttpUpgradeService.installServices(context, ManagementRemotingServices.HTTP_CONNECTOR, httpConnectorName,
                     ManagementRemotingServices.MANAGEMENT_ENDPOINT, commonPolicy.getConnectorOptions(), saslAuthenticationFactory);

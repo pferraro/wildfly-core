@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.elytron;
 
-import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDefinition.commonDependencies;
 import static org.wildfly.extension.elytron.ElytronExtension.isServerOrHostController;
@@ -29,6 +28,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
@@ -50,7 +50,7 @@ class FilteringKeyStoreDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition KEY_STORE = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.KEY_STORE, ModelType.STRING, false)
             .setAllowExpression(false)
             .setRestartAllServices()
-            .setCapabilityReference(KEY_STORE_CAPABILITY, KEY_STORE_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.KEY_STORE.getName(), KEY_STORE_RUNTIME_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition ALIAS_FILTER = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.ALIAS_FILTER, ModelType.STRING, false)
@@ -110,8 +110,7 @@ class FilteringKeyStoreDefinition extends SimpleResourceDefinition {
             String sourceKeyStoreName = KEY_STORE.resolveModelAttribute(context, model).asStringOrNull();
             String aliasFilter = ALIAS_FILTER.resolveModelAttribute(context, model).asStringOrNull();
 
-            String sourceKeyStoreCapability = RuntimeCapability.buildDynamicCapabilityName(KEY_STORE_CAPABILITY, sourceKeyStoreName);
-            ServiceName sourceKeyStoreServiceName = context.getCapabilityServiceName(sourceKeyStoreCapability, KeyStore.class);
+            ServiceName sourceKeyStoreServiceName = context.getCapabilityServiceName(SecurityServiceDescriptor.KEY_STORE, sourceKeyStoreName);
 
 
             final InjectedValue<KeyStore> keyStore = new InjectedValue<>();

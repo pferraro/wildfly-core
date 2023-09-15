@@ -28,12 +28,12 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.host.controller.model.host.AdminOnlyDomainConfigPolicy;
 import org.jboss.as.remoting.Protocol;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -70,7 +70,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
 
     public static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.AUTHENTICATION_CONTEXT,  ModelType.STRING,  true)
-                    .setCapabilityReference("org.wildfly.security.authentication-context", "org.wildfly.host.controller")
+                    .setCapabilityReference(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT.getName(), "org.wildfly.host.controller")
                     .setAlternatives(ModelDescriptionConstants.SECURITY_REALM, ModelDescriptionConstants.USERNAME)
                     .build();
 
@@ -138,8 +138,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
 
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    hostControllerInfo.setAuthenticationContext(context.getCapabilityServiceName(
-                            "org.wildfly.security.authentication-context", authenticationContext, AuthenticationContext.class));
+                    hostControllerInfo.setAuthenticationContext(context.getCapabilityServiceName(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT, authenticationContext));
                 }
             }, Stage.RUNTIME);
         } else {

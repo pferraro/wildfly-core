@@ -10,13 +10,10 @@ import static org.jboss.as.controller.security.CredentialReference.handleCredent
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.wildfly.extension.elytron.Capabilities.KEY_MANAGER_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.KEY_MANAGER_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.PRINCIPAL_TRANSFORMER_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.PROVIDERS_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.REALM_MAPPER_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SECURITY_DOMAIN_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SSL_CONTEXT_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.TRUST_MANAGER_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.TRUST_MANAGER_RUNTIME_CAPABILITY;
@@ -95,6 +92,7 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
@@ -127,6 +125,7 @@ import org.wildfly.security.ssl.SNIContextMatcher;
 import org.wildfly.security.ssl.SNISSLContext;
 import org.wildfly.security.ssl.SSLContextBuilder;
 import org.wildfly.security.ssl.X509RevocationTrustManager;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * Definitions for resources used to configure SSLContexts.
@@ -172,31 +171,31 @@ class SSLDefinitions {
 
     static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SECURITY_DOMAIN, ModelType.STRING, true)
             .setMinSize(1)
-            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SECURITY_DOMAIN.getName(), SSL_CONTEXT_RUNTIME_CAPABILITY)
             .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition PRE_REALM_PRINCIPAL_TRANSFORMER = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.PRE_REALM_PRINCIPAL_TRANSFORMER, ModelType.STRING, true)
             .setMinSize(1)
-            .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, SSL_CONTEXT_RUNTIME_CAPABILITY)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
     static final SimpleAttributeDefinition POST_REALM_PRINCIPAL_TRANSFORMER = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.POST_REALM_PRINCIPAL_TRANSFORMER, ModelType.STRING, true)
             .setMinSize(1)
-            .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, SSL_CONTEXT_RUNTIME_CAPABILITY)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
     static final SimpleAttributeDefinition FINAL_PRINCIPAL_TRANSFORMER = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.FINAL_PRINCIPAL_TRANSFORMER, ModelType.STRING, true)
             .setMinSize(1)
-            .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(PRINCIPAL_TRANSFORMER_CAPABILITY, SSL_CONTEXT_RUNTIME_CAPABILITY)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
     static final SimpleAttributeDefinition REALM_MAPPER = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.REALM_MAPPER, ModelType.STRING, true)
             .setMinSize(1)
-            .setCapabilityReference(REALM_MAPPER_CAPABILITY, SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(REALM_MAPPER_CAPABILITY, SSL_CONTEXT_RUNTIME_CAPABILITY)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
@@ -278,14 +277,14 @@ class SSLDefinitions {
 
     static final SimpleAttributeDefinition KEY_MANAGER = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.KEY_MANAGER, ModelType.STRING, true)
             .setMinSize(1)
-            .setCapabilityReference(KEY_MANAGER_CAPABILITY, SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(KEY_MANAGER_CAPABILITY, SSL_CONTEXT_RUNTIME_CAPABILITY)
             .setRestartAllServices()
             .setAllowExpression(false)
             .build();
 
     static final SimpleAttributeDefinition TRUST_MANAGER = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.TRUST_MANAGER, ModelType.STRING, true)
             .setMinSize(1)
-            .setCapabilityReference(TRUST_MANAGER_CAPABILITY, SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(TRUST_MANAGER_CAPABILITY, SSL_CONTEXT_RUNTIME_CAPABILITY)
             .setRestartAllServices()
             .setAllowExpression(false)
             .build();
@@ -364,7 +363,7 @@ class SSLDefinitions {
             .build();
 
     static final SimpleAttributeDefinition DEFAULT_SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.DEFAULT_SSL_CONTEXT, ModelType.STRING)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName())
             .setRequired(true)
             .setRestartAllServices()
             .build();
@@ -372,7 +371,7 @@ class SSLDefinitions {
     static final MapAttributeDefinition HOST_CONTEXT_MAP = new SimpleMapAttributeDefinition.Builder(ElytronDescriptionConstants.HOST_CONTEXT_MAP, ModelType.STRING, true)
             .setMinSize(0)
             .setAllowExpression(false)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName())
             .setMapValidator(new HostContextMapValidator())
             .setRestartAllServices()
             .build();
@@ -500,7 +499,7 @@ class SSLDefinitions {
                 .build();
 
         final SimpleAttributeDefinition keystoreDefinition = new SimpleAttributeDefinitionBuilder(KEYSTORE)
-                .setCapabilityReference(KEY_STORE_CAPABILITY, KEY_MANAGER_CAPABILITY)
+                .setCapabilityReference(SecurityServiceDescriptor.KEY_STORE.getName(), KEY_MANAGER_CAPABILITY)
                 .setAllowExpression(false)
                 .setRestartAllServices()
                 .build();
@@ -533,9 +532,7 @@ class SSLDefinitions {
                 final String keyStoreName = keystoreDefinition.resolveModelAttribute(context, model).asStringOrNull();
                 final InjectedValue<KeyStore> keyStoreInjector = new InjectedValue<>();
                 if (keyStoreName != null) {
-                    serviceBuilder.addDependency(context.getCapabilityServiceName(
-                            buildDynamicCapabilityName(KEY_STORE_CAPABILITY, keyStoreName), KeyStore.class),
-                            KeyStore.class, keyStoreInjector);
+                    serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.KEY_STORE, keyStoreName), KeyStore.class, keyStoreInjector);
                 }
 
                 final String aliasFilter = ALIAS_FILTER.resolveModelAttribute(context, model).asStringOrNull();
@@ -644,7 +641,7 @@ class SSLDefinitions {
                 .build();
 
         final SimpleAttributeDefinition keystoreDefinition = new SimpleAttributeDefinitionBuilder(KEYSTORE)
-                .setCapabilityReference(KEY_STORE_CAPABILITY, TRUST_MANAGER_CAPABILITY)
+                .setCapabilityReference(SecurityServiceDescriptor.KEY_STORE.getName(), TRUST_MANAGER_CAPABILITY)
                 .setAllowExpression(false)
                 .setRestartAllServices()
                 .build();
@@ -670,9 +667,7 @@ class SSLDefinitions {
                 final String keyStoreName = keystoreDefinition.resolveModelAttribute(context, model).asStringOrNull();
                 final InjectedValue<KeyStore> keyStoreInjector = new InjectedValue<>();
                 if (keyStoreName != null) {
-                    serviceBuilder.addDependency(context.getCapabilityServiceName(
-                            buildDynamicCapabilityName(KEY_STORE_CAPABILITY, keyStoreName), KeyStore.class),
-                            KeyStore.class, keyStoreInjector);
+                    serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.KEY_STORE, keyStoreName), KeyStore.class, keyStoreInjector);
                 }
 
                 final String aliasFilter = ALIAS_FILTER.resolveModelAttribute(context, model).asStringOrNull();
@@ -779,9 +774,7 @@ class SSLDefinitions {
                 final InjectedValue<KeyStore> responderStoreInjector = responderKeystore != null ? new InjectedValue<>() : keyStoreInjector;
 
                 if (responderKeystore != null) {
-                    serviceBuilder.addDependency(context.getCapabilityServiceName(
-                            buildDynamicCapabilityName(KEY_STORE_CAPABILITY, responderKeystore), KeyStore.class),
-                            KeyStore.class, responderStoreInjector);
+                    serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.KEY_STORE, responderKeystore), KeyStore.class, responderStoreInjector);
                 }
 
                 URI responderUri;
@@ -1238,7 +1231,6 @@ class SSLDefinitions {
 
     private static <T> InjectedValue<T> addDependency(String baseName, SimpleAttributeDefinition attribute,
                                                       Class<T> type, ServiceBuilder<SSLContext> serviceBuilder, OperationContext context, ModelNode model) throws OperationFailedException {
-
         String dynamicNameElement = attribute.resolveModelAttribute(context, model).asStringOrNull();
         InjectedValue<T> injectedValue = new InjectedValue<>();
 
@@ -1250,10 +1242,22 @@ class SSLDefinitions {
         return injectedValue;
     }
 
+    private static <T> InjectedValue<T> addDependency(UnaryServiceDescriptor<T> descriptor, SimpleAttributeDefinition attribute,
+                                                      ServiceBuilder<SSLContext> serviceBuilder, OperationContext context, ModelNode model) throws OperationFailedException {
+
+        String dynamicNameElement = attribute.resolveModelAttribute(context, model).asStringOrNull();
+        InjectedValue<T> injectedValue = new InjectedValue<>();
+
+        if (dynamicNameElement != null) {
+            serviceBuilder.addDependency(context.getCapabilityServiceName(descriptor, dynamicNameElement), descriptor.getType(), injectedValue);
+        }
+        return injectedValue;
+    }
+
     static ResourceDefinition getServerSSLContextDefinition(boolean serverOrHostController) {
 
         final SimpleAttributeDefinition providersDefinition = new SimpleAttributeDefinitionBuilder(PROVIDERS)
-                .setCapabilityReference(PROVIDERS_CAPABILITY, SSL_CONTEXT_CAPABILITY)
+                .setCapabilityReference(PROVIDERS_CAPABILITY, SSL_CONTEXT_RUNTIME_CAPABILITY)
                 .setAllowExpression(false)
                 .setRestartAllServices()
                 .build();
@@ -1275,7 +1279,7 @@ class SSLDefinitions {
             protected ValueSupplier<SSLContext> getValueSupplier(ServiceBuilder<SSLContext> serviceBuilder,
                                                                  OperationContext context, ModelNode model) throws OperationFailedException {
 
-                final InjectedValue<SecurityDomain> securityDomainInjector = addDependency(SECURITY_DOMAIN_CAPABILITY, SECURITY_DOMAIN, SecurityDomain.class, serviceBuilder, context, model);
+                final InjectedValue<SecurityDomain> securityDomainInjector = addDependency(SecurityServiceDescriptor.SECURITY_DOMAIN, SECURITY_DOMAIN, serviceBuilder, context, model);
                 final InjectedValue<KeyManager> keyManagerInjector = addDependency(KEY_MANAGER_CAPABILITY, KEY_MANAGER, KeyManager.class, serviceBuilder, context, model);
                 final InjectedValue<TrustManager> trustManagerInjector = addDependency(TRUST_MANAGER_CAPABILITY, TRUST_MANAGER, TrustManager.class, serviceBuilder, context, model);
                 final InjectedValue<PrincipalTransformer> preRealmPrincipalTransformerInjector = addDependency(PRINCIPAL_TRANSFORMER_CAPABILITY, PRE_REALM_PRINCIPAL_TRANSFORMER, PrincipalTransformer.class, serviceBuilder, context, model);
@@ -1434,7 +1438,7 @@ class SSLDefinitions {
     static ResourceDefinition getClientSSLContextDefinition(boolean serverOrHostController) {
 
         final SimpleAttributeDefinition providersDefinition = new SimpleAttributeDefinitionBuilder(PROVIDERS)
-                .setCapabilityReference(PROVIDERS_CAPABILITY, SSL_CONTEXT_CAPABILITY)
+                .setCapabilityReference(PROVIDERS_CAPABILITY, SSL_CONTEXT_RUNTIME_CAPABILITY)
                 .setAllowExpression(false)
                 .setRestartAllServices()
                 .build();

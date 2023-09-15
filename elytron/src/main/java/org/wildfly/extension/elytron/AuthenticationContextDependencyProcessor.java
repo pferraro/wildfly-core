@@ -5,9 +5,9 @@
 package org.wildfly.extension.elytron;
 
 import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
-import static org.wildfly.extension.elytron.Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -29,7 +29,7 @@ class AuthenticationContextDependencyProcessor implements DeploymentUnitProcesso
         String defaultAuthenticationContext = this.defaultAuthenticationContext;
         if (defaultAuthenticationContext != null) {
             CapabilityServiceSupport capabilityServiceSupport = context.getDeploymentUnit().getAttachment(CAPABILITY_SERVICE_SUPPORT);
-            ServiceName serviceName = capabilityServiceSupport.getCapabilityServiceName(AUTHENTICATION_CONTEXT_CAPABILITY, defaultAuthenticationContext);
+            ServiceName serviceName = capabilityServiceSupport.getCapabilityServiceName(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT, defaultAuthenticationContext);
             context.addDependency(serviceName, ElytronExtension.AUTHENTICATION_CONTEXT_KEY);
         }
     }

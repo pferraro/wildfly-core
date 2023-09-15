@@ -12,6 +12,7 @@ import java.util.logging.Handler;
 
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.logging.filters.Filters;
 import org.jboss.as.logging.handlers.AbstractHandlerDefinition;
 import org.jboss.as.logging.loggers.LoggerAttributes;
@@ -25,8 +26,10 @@ public class Capabilities {
 
     /**
      * Reference to an SSL context.
+     * @deprecated Use {@link SecurityServiceDescriptor#SSL_CONTEXT} instead.
      */
-    public static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
+    @Deprecated(forRemoval = true)
+    public static final String SSL_CONTEXT_CAPABILITY = SecurityServiceDescriptor.SSL_CONTEXT.getName();
 
     /**
      * A capability for logging filter.

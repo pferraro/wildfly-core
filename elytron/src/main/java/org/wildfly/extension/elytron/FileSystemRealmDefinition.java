@@ -5,10 +5,7 @@
 
 package org.wildfly.extension.elytron;
 
-import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 import static org.wildfly.extension.elytron.Capabilities.CREDENTIAL_STORE_API_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.CREDENTIAL_STORE_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.MODIFIABLE_SECURITY_REALM_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_REALM_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY;
@@ -55,6 +52,7 @@ import org.jboss.as.controller.operations.validation.StringAllowedValuesValidato
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
@@ -137,7 +135,7 @@ class FileSystemRealmDefinition extends SimpleResourceDefinition {
                     .setRequires(ElytronDescriptionConstants.SECRET_KEY)
                     .setMinSize(1)
                     .setRestartAllServices()
-                    .setCapabilityReference(CREDENTIAL_STORE_CAPABILITY, SECURITY_REALM_CAPABILITY)
+                    .setCapabilityReference(SecurityServiceDescriptor.CREDENTIAL_STORE.getName(), SECURITY_REALM_CAPABILITY)
                     .build();
 
     static final SimpleAttributeDefinition SECRET_KEY =
@@ -155,7 +153,7 @@ class FileSystemRealmDefinition extends SimpleResourceDefinition {
                     .setRequires(ElytronDescriptionConstants.KEY_STORE_ALIAS)
                     .setMinSize(1)
                     .setRestartAllServices()
-                    .setCapabilityReference(KEY_STORE_CAPABILITY, SECURITY_REALM_RUNTIME_CAPABILITY)
+                    .setCapabilityReference(SecurityServiceDescriptor.KEY_STORE.getName(), SECURITY_REALM_RUNTIME_CAPABILITY)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
@@ -400,12 +398,10 @@ class FileSystemRealmDefinition extends SimpleResourceDefinition {
             ServiceBuilder<SecurityRealm> serviceBuilder = serviceTarget.addService(mainServiceName, fileSystemRealmService)
                     .addAliases(aliasServiceName);
             if (credentialStore != null) {
-                serviceBuilder.requires(context.getCapabilityServiceName(buildDynamicCapabilityName(CREDENTIAL_STORE_CAPABILITY, credentialStore), CredentialStore.class));
+                serviceBuilder.requires(context.getCapabilityServiceName(SecurityServiceDescriptor.CREDENTIAL_STORE, credentialStore));
             }
             if (keyStoreName != null) {
-                serviceBuilder.addDependency(context.getCapabilityServiceName(
-                        buildDynamicCapabilityName(KEY_STORE_CAPABILITY, keyStoreName), KeyStore.class),
-                        KeyStore.class, keyStoreInjector);
+                serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.KEY_STORE, keyStoreName), KeyStore.class, keyStoreInjector);
             }
             if (relativeTo != null) {
                 serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, pathManagerInjector);

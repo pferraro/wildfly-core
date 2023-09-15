@@ -5,7 +5,7 @@
 package org.wildfly.extension.elytron;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.decorator;
-import static org.wildfly.extension.elytron.Capabilities.HTTP_AUTHENTICATION_FACTORY_CAPABILITY;
+import static org.wildfly.extension.elytron.Capabilities.HTTP_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.CONFIGURABLE_HTTP_SERVER_MECHANISM_FACTORY;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.HTTP_AUTHENTICATION_FACTORY;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.HTTP_SERVER_MECHANISM_FACTORY;
@@ -27,7 +27,7 @@ class HttpParser {
     private PersistentResourceXMLDescription httpServerMechanismFactoryParser = PersistentResourceXMLDescription.builder(PathElement.pathElement(HTTP_AUTHENTICATION_FACTORY))
             .addAttribute(AuthenticationFactoryDefinitions.BASE_SECURITY_DOMAIN_REF)
             .addAttribute(AuthenticationFactoryDefinitions.HTTP_SERVER_MECHANISM_FACTORY)
-            .addAttribute(AuthenticationFactoryDefinitions.getMechanismConfiguration(HTTP_AUTHENTICATION_FACTORY_CAPABILITY))
+            .addAttribute(AuthenticationFactoryDefinitions.getMechanismConfiguration(HTTP_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY))
             .build();
 
     private PersistentResourceXMLDescription aggregateHttpServerMechanismFactory = PersistentResourceXMLDescription.builder(PathElement.pathElement(ElytronDescriptionConstants.AGGREGATE_HTTP_SERVER_MECHANISM_FACTORY))

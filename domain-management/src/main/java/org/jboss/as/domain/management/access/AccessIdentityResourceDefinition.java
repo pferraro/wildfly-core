@@ -28,6 +28,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
@@ -50,7 +51,6 @@ import org.wildfly.security.auth.server.SecurityDomain;
  */
 public class AccessIdentityResourceDefinition extends SimpleResourceDefinition {
 
-    private static final String SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
     private static final String MANAGEMENT_IDENTITY_CAPABILITY = "org.wildfly.management.identity";
     private static final RuntimeCapability<Void> MANAGEMENT_IDENTITY_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(MANAGEMENT_IDENTITY_CAPABILITY, Void.class)
             .build();
@@ -60,7 +60,7 @@ public class AccessIdentityResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SECURITY_DOMAIN, ModelType.STRING, false)
             .setMinSize(1)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, MANAGEMENT_IDENTITY_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SECURITY_DOMAIN.getName(), MANAGEMENT_IDENTITY_CAPABILITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .build();
 
@@ -101,7 +101,7 @@ public class AccessIdentityResourceDefinition extends SimpleResourceDefinition {
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             final String securityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
             final ServiceBuilder<?> sb = context.getServiceTarget().addService(MANAGEMENT_IDENTITY_RUNTIME_CAPABILITY.getCapabilityServiceName());
-            final Supplier<SecurityDomain> sdSupplier = sb.requires(context.getCapabilityServiceName(RuntimeCapability.buildDynamicCapabilityName(SECURITY_DOMAIN_CAPABILITY, securityDomain), SecurityDomain.class));
+            final Supplier<SecurityDomain> sdSupplier = sb.requires(context.getCapabilityServiceName(SecurityServiceDescriptor.SECURITY_DOMAIN, securityDomain));
             sb.setInstance(new IdentityService(sdSupplier, securityIdentitySupplier));
             sb.install();
             //Let's verify that the IdentityService is correctly started.

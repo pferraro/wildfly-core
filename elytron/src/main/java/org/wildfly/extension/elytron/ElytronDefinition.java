@@ -7,7 +7,6 @@ package org.wildfly.extension.elytron;
 
 
 import static org.jboss.as.server.security.VirtualDomainUtil.VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE;
-import static org.wildfly.extension.elytron.Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.ELYTRON_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.EVIDENCE_DECODER_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.MODIFIABLE_SECURITY_REALM_RUNTIME_CAPABILITY;
@@ -21,7 +20,6 @@ import static org.wildfly.extension.elytron.Capabilities.ROLE_MAPPER_RUNTIME_CAP
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_EVENT_LISTENER_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_FACTORY_CREDENTIAL_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronExtension.isServerOrHostController;
 import static org.wildfly.extension.elytron.SecurityActions.doPrivileged;
 import static org.wildfly.extension.elytron._private.ElytronSubsystemMessages.ROOT_LOGGER;
@@ -62,6 +60,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -115,12 +114,12 @@ class ElytronDefinition extends SimpleResourceDefinition {
     private static final AuthenticationContextDependencyProcessor AUTHENITCATION_CONTEXT_PROCESSOR = new AuthenticationContextDependencyProcessor();
 
     static final SimpleAttributeDefinition DEFAULT_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.DEFAULT_AUTHENTICATION_CONTEXT, ModelType.STRING, true)
-            .setCapabilityReference(AUTHENTICATION_CONTEXT_CAPABILITY, ELYTRON_RUNTIME_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT.getName(), ELYTRON_RUNTIME_CAPABILITY)
             .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition DEFAULT_SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.DEFAULT_SSL_CONTEXT, ModelType.STRING, true)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, ELYTRON_RUNTIME_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName(), ELYTRON_RUNTIME_CAPABILITY)
             .setRestartAllServices()
             .build();
 
@@ -478,7 +477,7 @@ class ElytronDefinition extends SimpleResourceDefinition {
                 ServiceBuilder<?> serviceBuilder = target
                         .addService(DefaultAuthenticationContextService.SERVICE_NAME)
                         .setInitialMode(Mode.ACTIVE);
-                Supplier<AuthenticationContext> defaultAuthenticationContextSupplier = serviceBuilder.requires(context.getCapabilityServiceName(AUTHENTICATION_CONTEXT_CAPABILITY, defaultAuthenticationContext, AuthenticationContext.class));
+                Supplier<AuthenticationContext> defaultAuthenticationContextSupplier = serviceBuilder.requires(context.getCapabilityServiceName(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT, defaultAuthenticationContext));
                 Consumer<AuthenticationContext> valueConsumer = serviceBuilder.provides(DefaultAuthenticationContextService.SERVICE_NAME);
 
                 DefaultAuthenticationContextService defaultAuthenticationContextService = new DefaultAuthenticationContextService(defaultAuthenticationContextSupplier, valueConsumer);
@@ -490,7 +489,7 @@ class ElytronDefinition extends SimpleResourceDefinition {
                 ServiceBuilder<?> serviceBuilder = target
                         .addService(DefaultSSLContextService.SERVICE_NAME)
                         .setInitialMode(Mode.ACTIVE);
-                Supplier<SSLContext> defaultSSLContextSupplier = serviceBuilder.requires(context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, defaultSSLContext, SSLContext.class));
+                Supplier<SSLContext> defaultSSLContextSupplier = serviceBuilder.requires(context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, defaultSSLContext));
                 Consumer<SSLContext> valueConsumer = serviceBuilder.provides(DefaultSSLContextService.SERVICE_NAME);
 
                 DefaultSSLContextService defaultSSLContextService = new DefaultSSLContextService(defaultSSLContextSupplier, valueConsumer);

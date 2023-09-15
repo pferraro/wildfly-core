@@ -7,9 +7,6 @@ package org.jboss.as.controller.management;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
-import static org.jboss.as.controller.management.Capabilities.NATIVE_MANAGEMENT_CAPABILITY;
-import static org.jboss.as.controller.management.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
-import static org.jboss.as.controller.management.Capabilities.SSL_CONTEXT_CAPABILITY;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -24,6 +21,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -35,8 +33,7 @@ import org.jboss.dmr.ModelType;
  */
 public abstract class BaseNativeInterfaceResourceDefinition extends SimpleResourceDefinition {
 
-    public static final RuntimeCapability<Void> NATIVE_MANAGEMENT_RUNTIME_CAPABILITY = RuntimeCapability.Builder
-            .of(NATIVE_MANAGEMENT_CAPABILITY).build();
+    public static final RuntimeCapability<Void> NATIVE_MANAGEMENT_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.management.native-interface").build();
 
     protected static final PathElement RESOURCE_PATH = PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE);
 
@@ -60,14 +57,14 @@ public abstract class BaseNativeInterfaceResourceDefinition extends SimpleResour
     public static final SimpleAttributeDefinition SASL_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SASL_AUTHENTICATION_FACTORY, ModelType.STRING, true)
         .setMinSize(1)
         .setRestartAllServices()
-        .setCapabilityReference(SASL_AUTHENTICATION_FACTORY_CAPABILITY, NATIVE_MANAGEMENT_RUNTIME_CAPABILITY)
+        .setCapabilityReference(SecurityServiceDescriptor.SASL_AUTHENTICATION_FACTORY.getName(), NATIVE_MANAGEMENT_RUNTIME_CAPABILITY)
         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_FACTORY_REF)
         .build();
 
     public static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SSL_CONTEXT, ModelType.STRING, true)
         .setMinSize(1)
         .setRestartAllServices()
-        .setCapabilityReference(SSL_CONTEXT_CAPABILITY, NATIVE_MANAGEMENT_RUNTIME_CAPABILITY)
+        .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName(), NATIVE_MANAGEMENT_RUNTIME_CAPABILITY)
         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
         .build();
 

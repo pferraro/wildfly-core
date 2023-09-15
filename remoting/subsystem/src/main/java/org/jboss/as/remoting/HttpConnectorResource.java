@@ -4,7 +4,6 @@
  */
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
 import static org.jboss.as.remoting.CommonAttributes.HTTP_CONNECTOR;
 import static org.jboss.as.remoting.ConnectorCommon.SASL_PROTOCOL;
 import static org.jboss.as.remoting.ConnectorCommon.SERVER_NAME;
@@ -24,6 +23,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -61,7 +61,7 @@ public class HttpConnectorResource extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition SASL_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(ConnectorCommon.SASL_AUTHENTICATION_FACTORY)
-            .setCapabilityReference(SASL_AUTHENTICATION_FACTORY_CAPABILITY, HTTP_CONNECTOR_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SASL_AUTHENTICATION_FACTORY.getName(), HTTP_CONNECTOR_CAPABILITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_FACTORY_REF)
             .setRestartAllServices()
             .build();

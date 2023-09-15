@@ -6,7 +6,6 @@
 package org.wildfly.extension.elytron;
 
 import static org.wildfly.extension.elytron.Capabilities.DIR_CONTEXT_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDefinition.commonDependencies;
 import static org.wildfly.extension.elytron.ElytronExtension.getRequiredService;
@@ -67,7 +66,7 @@ final class LdapKeyStoreDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition DIR_CONTEXT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.DIR_CONTEXT, ModelType.STRING, false)
             .setAllowExpression(false)
             .setRestartAllServices()
-            .setCapabilityReference(DIR_CONTEXT_CAPABILITY, KEY_STORE_CAPABILITY)
+            .setCapabilityReference(KEY_STORE_RUNTIME_CAPABILITY, DIR_CONTEXT_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition SEARCH_PATH = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SEARCH_PATH, ModelType.STRING, false)

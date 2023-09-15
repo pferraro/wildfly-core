@@ -6,7 +6,6 @@
 package org.jboss.as.remoting;
 
 import static org.jboss.as.remoting.AbstractOutboundConnectionResourceDefinition.OUTBOUND_CONNECTION_CAPABILITY;
-import static org.jboss.as.remoting.Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -16,6 +15,7 @@ import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Endpoint;
@@ -44,7 +44,7 @@ class RemoteOutboundConnectionAdd extends AbstractAddStepHandler {
         final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(OUTBOUND_CONNECTION_CAPABILITY);
         final Consumer<RemoteOutboundConnectionService> serviceConsumer = builder.provides(OUTBOUND_CONNECTION_CAPABILITY);
         final Supplier<OutboundSocketBinding> osbSupplier = builder.requires(OutboundSocketBinding.SERVICE_DESCRIPTOR, outboundSocketBindingRef);
-        final Supplier<AuthenticationContext> acSupplier = (authenticationContext != null) ? builder.requiresCapability(AUTHENTICATION_CONTEXT_CAPABILITY, AuthenticationContext.class, authenticationContext) : null;
+        final Supplier<AuthenticationContext> acSupplier = (authenticationContext != null) ? builder.requires(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT, authenticationContext) : null;
         builder.requiresCapability(RemotingSubsystemRootResource.REMOTING_ENDPOINT_CAPABILITY.getName(), Endpoint.class);
         builder.setInstance(new RemoteOutboundConnectionService(serviceConsumer, osbSupplier, acSupplier, connOpts, username, protocol));
         builder.install();

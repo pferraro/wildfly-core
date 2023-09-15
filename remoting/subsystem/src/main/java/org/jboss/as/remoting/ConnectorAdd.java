@@ -5,24 +5,20 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
-import static org.jboss.as.remoting.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.jboss.as.remoting.logging.RemotingLogger.ROOT_LOGGER;
-
-import javax.net.ssl.SSLContext;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
-import org.wildfly.security.auth.server.SaslAuthenticationFactory;
 import org.xnio.OptionMap;
 
 /**
@@ -57,12 +53,12 @@ public class ConnectorAdd extends AbstractAddStepHandler {
 
         ModelNode saslAuthenticationFactoryModel = ConnectorResource.SASL_AUTHENTICATION_FACTORY.resolveModelAttribute(context, fullModel);
         final ServiceName saslAuthenticationFactoryName = saslAuthenticationFactoryModel.isDefined()
-                ? context.getCapabilityServiceName(SASL_AUTHENTICATION_FACTORY_CAPABILITY, saslAuthenticationFactoryModel.asString(), SaslAuthenticationFactory.class)
+                ? context.getCapabilityServiceName(SecurityServiceDescriptor.SASL_AUTHENTICATION_FACTORY, saslAuthenticationFactoryModel.asString())
                 : null;
 
         ModelNode sslContextModel = ConnectorResource.SSL_CONTEXT.resolveModelAttribute(context, fullModel);
         final ServiceName sslContextName = sslContextModel.isDefined()
-                ? context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, sslContextModel.asString(), SSLContext.class) : null;
+                ? context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, sslContextModel.asString()) : null;
 
         final ServiceName sbmName = context.getCapabilityServiceName(SocketBindingManager.SERVICE_DESCRIPTOR);
 

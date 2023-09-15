@@ -6,7 +6,7 @@ package org.wildfly.extension.elytron;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import static org.jboss.as.controller.PersistentResourceXMLDescription.decorator;
-import static org.wildfly.extension.elytron.Capabilities.SASL_AUTHENTICATION_FACTORY_CAPABILITY;
+import static org.wildfly.extension.elytron.Capabilities.SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.CONFIGURABLE_SASL_SERVER_FACTORY;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.SASL_AUTHENTICATION_FACTORY;
 import static org.wildfly.extension.elytron.ElytronDescriptionConstants.SASL_SERVER_FACTORY;
@@ -28,7 +28,7 @@ class SaslParser {
             .addChild(builder(PathElement.pathElement(SASL_AUTHENTICATION_FACTORY))
                     .addAttribute(SaslServerDefinitions.SASL_SERVER_FACTORY)
                     .addAttribute(SaslServerDefinitions.SECURITY_DOMAIN)
-                    .addAttribute(AuthenticationFactoryDefinitions.getMechanismConfiguration(SASL_AUTHENTICATION_FACTORY_CAPABILITY)))
+                    .addAttribute(AuthenticationFactoryDefinitions.getMechanismConfiguration(SASL_AUTHENTICATION_FACTORY_RUNTIME_CAPABILITY)))
             .addChild(builder(PathElement.pathElement(ElytronDescriptionConstants.AGGREGATE_SASL_SERVER_FACTORY))
                     .addAttribute(SaslServerDefinitions.getRawAggregateSaslServerFactoryDefinition().getReferencesAttribute(),
                             new AttributeParsers.NamedStringListParser(SASL_SERVER_FACTORY),

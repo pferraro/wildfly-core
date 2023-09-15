@@ -30,10 +30,6 @@ import org.xnio.OptionMap.Builder;
  */
 public abstract class BaseHttpInterfaceAddStepHandler extends ManagementInterfaceAddStepHandler {
 
-    protected static final String HTTP_AUTHENTICATION_FACTORY_CAPABILITY = "org.wildfly.security.http-authentication-factory";
-    protected static final String SASL_AUTHENTICATION_FACTORY_CAPABILITY = "org.wildfly.security.sasl-authentication-factory";
-    protected static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
-
     protected BaseHttpInterfaceAddStepHandler(final AttributeDefinition[] attributeDefinitions) {
         super(attributeDefinitions);
     }

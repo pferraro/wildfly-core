@@ -67,8 +67,10 @@ public final class CredentialReference {
 
     /**
      * Capability required by a credential-reference attribute if its {@code store} field is configured.
+     * @deprecated Use {@link SecurityServiceDescriptor#CREDENTIAL_STORE} instead.
      */
-    public static final String CREDENTIAL_STORE_CAPABILITY = "org.wildfly.security.credential-store";
+    @Deprecated(forRemoval = true)
+    public static final String CREDENTIAL_STORE_CAPABILITY = SecurityServiceDescriptor.CREDENTIAL_STORE.getName();
     /**
      * Standard name of a credential reference attribute.
      */
@@ -141,7 +143,7 @@ public final class CredentialReference {
                 .build();
 
         credentialStoreAttributeWithCapabilityReference = new SimpleAttributeDefinitionBuilder(credentialStoreAttribute)
-                .setCapabilityReference(CREDENTIAL_STORE_CAPABILITY)
+                .setCapabilityReference(SecurityServiceDescriptor.CREDENTIAL_STORE.getName())
                 .build();
 
         credentialReferenceADWithCapabilityReference = getAttributeBuilder(CREDENTIAL_REFERENCE, CREDENTIAL_REFERENCE, false, true)
@@ -366,8 +368,7 @@ public final class CredentialReference {
         final ServiceName credentialStoreServiceName;
         if (credentialAlias != null) {
             // use credential store service
-            String credentialStoreCapabilityName = RuntimeCapability.buildDynamicCapabilityName(CREDENTIAL_STORE_CAPABILITY, credentialStoreName);
-            credentialStoreServiceName = context.getCapabilityServiceName(credentialStoreCapabilityName, CredentialStore.class);
+            credentialStoreServiceName = context.getCapabilityServiceName(SecurityServiceDescriptor.CREDENTIAL_STORE, credentialStoreName);
             serviceRegistry = context.getServiceRegistry(true);
             if (serviceBuilder != null) {
                 serviceBuilder.requires(credentialStoreServiceName);
@@ -376,7 +377,7 @@ public final class CredentialReference {
                     ServiceName credentialStoreUpdateServiceName = CredentialStoreUpdateService.createServiceName(key, credentialStoreName);
                     CredentialStoreUpdateService credentialStoreUpdateService = new CredentialStoreUpdateService(credentialAlias, secret, context.getResult(), credentialStoreUpdateInfo);
                     ServiceBuilder<CredentialStoreUpdateService> credentialStoreUpdateServiceBuilder = context.getServiceTarget().addService(credentialStoreUpdateServiceName, credentialStoreUpdateService).setInitialMode(ServiceController.Mode.ACTIVE);
-                    credentialStoreUpdateServiceBuilder.addDependency(context.getCapabilityServiceName(credentialStoreCapabilityName, CredentialStore.class), CredentialStore.class, credentialStoreUpdateService.getCredentialStoreInjector());
+                    credentialStoreUpdateServiceBuilder.addDependency(credentialStoreServiceName, CredentialStore.class, credentialStoreUpdateService.getCredentialStoreInjector());
                     credentialStoreUpdateServiceBuilder.install();
                     serviceBuilder.requires(credentialStoreUpdateServiceName);
                 }
@@ -603,8 +604,7 @@ public final class CredentialReference {
             Map<String, CredentialStoreUpdateInfo> credentialStoreUpdateInfoMap = context.getAttachment(CREDENTIAL_STORE_UPDATE_INFO);
             CredentialStoreUpdateInfo credentialStoreUpdateInfo = credentialStoreUpdateInfoMap != null ? credentialStoreUpdateInfoMap.get(getAttachmentMapKey(context, credentialReferenceAD.getName())) : null;
             if (store != null && credentialStoreUpdateInfo != null && credentialStoreUpdateInfo.getClearText() != null) {
-                final String credentialStoreCapabilityName = RuntimeCapability.buildDynamicCapabilityName(CREDENTIAL_STORE_CAPABILITY, store);
-                final ServiceName credentialStoreServiceName = context.getCapabilityServiceName(credentialStoreCapabilityName, CredentialStore.class);
+                final ServiceName credentialStoreServiceName = context.getCapabilityServiceName(SecurityServiceDescriptor.CREDENTIAL_STORE, store);
                 final CredentialStore credentialStore = getCredentialStore(context.getServiceRegistry(true), credentialStoreServiceName);
                 ModelNode credentialStoreUpdateResult = context.getResult().get(CREDENTIAL_STORE_UPDATE);
                 if (credentialStoreUpdateInfo.getPreviousAlias() == null) {

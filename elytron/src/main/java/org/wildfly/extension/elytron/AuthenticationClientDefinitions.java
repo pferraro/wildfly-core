@@ -10,11 +10,8 @@ import static org.jboss.as.controller.security.CredentialReference.rollbackCrede
 import static org.wildfly.common.Assert.checkNotNullParam;
 import static org.wildfly.extension.elytron.Capabilities.AUTHENTICATION_CONFIGURATION_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.AUTHENTICATION_CONFIGURATION_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SECURITY_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_FACTORY_CREDENTIAL_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.elytron._private.ElytronSubsystemMessages.ROOT_LOGGER;
 
 import java.util.HashMap;
@@ -39,6 +36,7 @@ import org.jboss.as.controller.operations.validation.StringAllowedValuesValidato
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
@@ -111,7 +109,7 @@ class AuthenticationClientDefinitions {
     static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SECURITY_DOMAIN, ModelType.STRING, true)
             .setAllowExpression(false)
             .setRestartAllServices()
-            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, AUTHENTICATION_CONFIGURATION_RUNTIME_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SECURITY_DOMAIN.getName(), AUTHENTICATION_CONFIGURATION_RUNTIME_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition FORWARDING_MODE =
@@ -226,7 +224,7 @@ class AuthenticationClientDefinitions {
 
     static final SimpleAttributeDefinition CONTEXT_EXTENDS = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.EXTENDS, ModelType.STRING, true)
             .setRestartAllServices()
-            .setCapabilityReference(AUTHENTICATION_CONTEXT_CAPABILITY, AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT.getName(), AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition AUTHENTICATION_CONFIGURATION = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.AUTHENTICATION_CONFIGURATION, ModelType.STRING, true)
@@ -236,7 +234,7 @@ class AuthenticationClientDefinitions {
 
     static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.SSL_CONTEXT, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.SSL_CONTEXT.getName(), AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY)
             .build();
 
     static final ObjectTypeAttributeDefinition MATCH_RULE = new ObjectTypeAttributeDefinition.Builder(ElytronDescriptionConstants.MATCH_RULE,
@@ -392,7 +390,7 @@ class AuthenticationClientDefinitions {
 
             private InjectedValue<SecurityDomain> getSecurityDomain(ServiceBuilder<AuthenticationConfiguration> serviceBuilder, OperationContext context, String securityDomain) {
                 InjectedValue<SecurityDomain> securityDomainInjector = new InjectedValue<>();
-                serviceBuilder.addDependency(context.getCapabilityServiceName(SECURITY_DOMAIN_CAPABILITY, securityDomain, SecurityDomain.class), SecurityDomain.class, securityDomainInjector);
+                serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.SECURITY_DOMAIN, securityDomain), SecurityDomain.class, securityDomainInjector);
                 return securityDomainInjector;
             }
         };
@@ -412,9 +410,7 @@ class AuthenticationClientDefinitions {
                 if (parent != null) {
                     InjectedValue<AuthenticationContext> parentInjector = new InjectedValue<>();
 
-                    serviceBuilder.addDependency(context.getCapabilityServiceName(
-                            RuntimeCapability.buildDynamicCapabilityName(AUTHENTICATION_CONTEXT_CAPABILITY, parent), AuthenticationContext.class),
-                            AuthenticationContext.class, parentInjector);
+                    serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.AUTHENTICATION_CONTEXT, parent), AuthenticationContext.class, parentInjector);
 
                     parentSupplier = parentInjector::getValue;
                 } else {
@@ -478,9 +474,7 @@ class AuthenticationClientDefinitions {
                         if (sslContext != null) {
                             InjectedValue<SSLContext> sslContextInjector = new InjectedValue<>();
 
-                            serviceBuilder.addDependency(context.getCapabilityServiceName(
-                                    RuntimeCapability.buildDynamicCapabilityName(SSL_CONTEXT_CAPABILITY, sslContext), SSLContext.class),
-                                    SSLContext.class, sslContextInjector);
+                            serviceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.SSL_CONTEXT, sslContext), SSLContext.class, sslContextInjector);
 
                             authContext = authContext.andThen(a -> a.withSsl(matchRuleSuppler.get(), sslContextInjector::getValue));
                         }

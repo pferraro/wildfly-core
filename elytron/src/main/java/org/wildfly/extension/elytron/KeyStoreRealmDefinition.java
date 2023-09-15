@@ -5,8 +5,6 @@
 
 package org.wildfly.extension.elytron;
 
-import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.SECURITY_REALM_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDefinition.commonDependencies;
 import static org.wildfly.extension.elytron.KeyStoreDefinition.KEY_STORE_UTIL;
@@ -25,6 +23,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
@@ -48,7 +47,7 @@ class KeyStoreRealmDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition KEYSTORE = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.KEY_STORE, ModelType.STRING, false)
         .setMinSize(1)
         .setRestartAllServices()
-        .setCapabilityReference(KEY_STORE_CAPABILITY, SECURITY_REALM_CAPABILITY)
+        .setCapabilityReference(SECURITY_REALM_RUNTIME_CAPABILITY, SecurityServiceDescriptor.KEY_STORE.getName())
         .build();
 
     private static final AbstractAddStepHandler ADD = new RealmAddHandler();
@@ -86,8 +85,8 @@ class KeyStoreRealmDefinition extends SimpleResourceDefinition {
 
             ServiceBuilder<SecurityRealm> serviceBuilder = serviceTarget.addService(realmName, keyStoreRealmService);
 
-            String keyStoreCapabilityName = RuntimeCapability.buildDynamicCapabilityName(KEY_STORE_CAPABILITY, KEYSTORE.resolveModelAttribute(context, model).asString());
-            ServiceName keyStoreServiceName = context.getCapabilityServiceName(keyStoreCapabilityName, KeyStore.class);
+            String keyStoreName = KEYSTORE.resolveModelAttribute(context, model).asString();
+            ServiceName keyStoreServiceName = context.getCapabilityServiceName(SecurityServiceDescriptor.KEY_STORE, keyStoreName);
             KEY_STORE_UTIL.addInjection(serviceBuilder, keyStore, keyStoreServiceName);
             commonDependencies(serviceBuilder)
                 .setInitialMode(Mode.ACTIVE)

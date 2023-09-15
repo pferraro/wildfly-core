@@ -11,7 +11,6 @@ import static org.wildfly.extension.elytron.AdvancedModifiableKeyStoreDecorator.
 import static org.wildfly.extension.elytron.Capabilities.CERTIFICATE_AUTHORITY_ACCOUNT_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.CERTIFICATE_AUTHORITY_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.CERTIFICATE_AUTHORITY_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_CAPABILITY;
 import static org.wildfly.extension.elytron.Capabilities.KEY_STORE_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.elytron.ElytronDefinition.commonRequirements;
 import static org.wildfly.extension.elytron.ElytronExtension.getRequiredService;
@@ -45,6 +44,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.SecurityServiceDescriptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
@@ -86,7 +86,7 @@ class CertificateAuthorityAccountDefinition extends SimpleResourceDefinition {
             .setAttributeGroup(ElytronDescriptionConstants.ACCOUNT_KEY)
             .setMinSize(1)
             .setRestartAllServices()
-            .setCapabilityReference(KEY_STORE_CAPABILITY, CERTIFICATE_AUTHORITY_ACCOUNT_RUNTIME_CAPABILITY)
+            .setCapabilityReference(SecurityServiceDescriptor.KEY_STORE.getName(), CERTIFICATE_AUTHORITY_ACCOUNT_RUNTIME_CAPABILITY)
             .build();
 
     static final SimpleAttributeDefinition ALIAS = new SimpleAttributeDefinitionBuilder(ElytronDescriptionConstants.ALIAS, ModelType.STRING, false)
@@ -187,8 +187,7 @@ class CertificateAuthorityAccountDefinition extends SimpleResourceDefinition {
             ServiceBuilder<AcmeAccount> acmeAccountServiceBuilder = serviceTarget.addService(acmeAccountServiceName, acmeAccountService).setInitialMode(ServiceController.Mode.ACTIVE);
             acmeAccountService.getCredentialSourceSupplierInjector().inject(credentialSourceSupplier);
 
-            String keyStoreCapabilityName = RuntimeCapability.buildDynamicCapabilityName(KEY_STORE_CAPABILITY, keyStoreName);
-            acmeAccountServiceBuilder.addDependency(context.getCapabilityServiceName(keyStoreCapabilityName, KeyStore.class), KeyStore.class, acmeAccountService.getKeyStoreInjector());
+            acmeAccountServiceBuilder.addDependency(context.getCapabilityServiceName(SecurityServiceDescriptor.KEY_STORE, keyStoreName), KeyStore.class, acmeAccountService.getKeyStoreInjector());
             if (certificateAuthorityName.equalsIgnoreCase(CertificateAuthority.LETS_ENCRYPT.getName())) {
                 commonRequirements(acmeAccountServiceBuilder).install();
             } else {

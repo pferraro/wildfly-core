@@ -4,6 +4,7 @@
  */
 package org.wildfly.service.capture;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.wildfly.common.function.ExceptionFunction;
@@ -40,4 +41,24 @@ public interface FunctionExecutor<V> {
      * @throws E if the function fails to execute
      */
     <R, E extends Exception> R execute(ExceptionFunction<V, R, E> function) throws E;
+
+    /**
+     * Returns a registry of executors composed from this registry via the specified function.
+     * @param <T> the composition type
+     * @param composer a composing function
+     * @return a registry of executors composed from this registry via the specified function.
+     */
+    default <T> FunctionExecutor<T> compose(Function<? super V, ? extends T> composer) {
+        return new FunctionExecutor<>() {
+            @Override
+            public <R, E extends Exception> R execute(ExceptionFunction<T, R, E> function) throws E {
+                return FunctionExecutor.this.<R, E>execute(new ExceptionFunction<>() {
+                    @Override
+                    public R apply(V value) throws E {
+                        return function.apply(composer.apply(value));
+                    }
+                });
+            }
+        };
+    }
 }
